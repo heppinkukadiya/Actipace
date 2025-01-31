@@ -95,6 +95,19 @@ const Footer = () => {
                                 <li>
                                     <Link to="/extrapage">Download</Link>
                                 </li>
+                                <li>
+                                    <a target="_blank" href="https://actipace.com/terms" >Terms and conditions</a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://actipace.com/privacy/" >Privacy Policy</a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://actipace.com/refund/" >Cancellation and Refund</a>
+                                </li>
+                                <li>
+                                    <a href="https://actipace.com/refund" target="_blank">Shipping and Exchange
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
