@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id              Int        @id @default(autoincrement())
+  email                String     @unique
+  mobileNo             String     @unique
+  address              String
+  city                 String
+  state                String
+  country              String
+  pincode              String
+  password             String
+  token                String?    @unique
+  resetPasswordExpires DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+}
+
+model Otp {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  otp        String?
+  otpExpires DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Software {
+  software_id   Int            @id @default(autoincrement())
+  name          String
+  description   String?
+  purchases     Purchase[]
+  softwarePlans SoftwarePlan[]
+}
+
+model SoftwarePlan {
+  plan_id     Int        @id @default(autoincrement())
+  software_id Int
+  devices     Int
+  year        Int
+  price       Decimal
+  purchases   Purchase[]
+  software    Software   @relation(fields: [software_id], references: [software_id])
+}
+
+model Purchase {
+  purchase_id   Int           @id @default(autoincrement())
+  email         String        
+  software_id   Int
+  plan_id       Int
+  paymentId     String?
+  orderId       String?
+  purchase_date DateTime?
+  expiresAt     DateTime?
+  city            String?  // Optional
+  company         String?  // Optional
+  country         String
+  fullName        String
+  gstin           String
+  phoneNumber     String
+  policyAccepted  Boolean
+  state           String?  // Optional
+  termsAccepted   Boolean
+  zipCode         String? 
+  status        PaymentStatus @default(PENDING)
+  softwarePlan  SoftwarePlan  @relation(fields: [plan_id], references: [plan_id])
+  software      Software      @relation(fields: [software_id], references: [software_id])
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+} 

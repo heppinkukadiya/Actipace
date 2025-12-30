@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      background-color: #ffffff;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      color: #333;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .order-details {
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+    .license-keys {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+    .license-keys li {
+      margin-bottom: 5px;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Thank You for Your Order!</h1>
+    </div>
+    <p>Dear Customer,</p>
+    <p>Thank you for placing an order with Actipace. We are pleased to confirm the receipt of your order <strong>#{{orderNumber}}</strong>, dated <strong>{{date}}</strong>.</p>
+    <div class="order-details">
+      <p><strong>Order details:</strong></p>
+      <p>Product: <strong>{{product}}</strong></p>
+      <p>Total Amount: <strong>{{amount}} INR</strong></p>
+      <p>Validity: <strong>{{validity}}</strong></p>
+      <p>License Keys:</p>
+      <ul class="license-keys">
+        {{licenseKeys}}
+      </ul>
+    </div>
+    <p>Your order is completed.</p>
+    <p>We appreciate the trust you have placed in us and aim to provide you with the highest quality of service. If you have any questions or need further assistance, please do not hesitate to contact our customer service team at <a href="mailto:support@actipace.com">support@actipace.com</a> or +91-9081114932.</p>
+    <p>Thank you for choosing Actipace. We value your business and look forward to serving you again.</p>
+    <div class="footer">
+      <p>Warm regards,</p>
+      <p><strong>Actipace Private Limited</strong></p>
+      <p>Address: G-103, HTC Market, Anjana Farm, Mithi Khadi Road, Surat, Gujarat, India</p>
+      <p>Contact: +91-9081114931</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="eg">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/server/controller/download/eg.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
