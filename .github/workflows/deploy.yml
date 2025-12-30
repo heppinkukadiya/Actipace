@@ -38,19 +38,19 @@ jobs:
 
       - name: Prisma Generate
         working-directory: ./server
-        run: npx prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma generate
 
       - name: Prisma Migrate Deploy
         working-directory: ./server
-        run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma migrate deploy
 
-      - name: Deploy & Restart with PM2
+      - name: Deploy & Restart
         working-directory: ./server
         run: |
-          # The runner now finds PM2 in ~/.npm-global/bin/
+          # Use the PM2 you installed manually on the VPS
           pm2 startOrRestart npm --name "Actipace" -- start
           pm2 save
