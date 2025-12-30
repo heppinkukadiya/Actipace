@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: "Actipace",
-            script: "npm",
+            script: "index.js",
             args: "start",
             cwd: "/home/dev/Actipace/server",
             env: {
