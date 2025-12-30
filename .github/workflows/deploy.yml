@@ -48,9 +48,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
-      - name: Deploy & Restart
+      - name: Deploy & Restart with PM2
         working-directory: ./server
         run: |
-          # Use the PM2 you installed manually on the VPS
+          # Uses the PM2 already installed on the VPS
           pm2 startOrRestart npm --name "Actipace" -- start
           pm2 save
