@@ -11,28 +11,31 @@ jobs:
     environment: Actipace
 
     steps:
-      # 1️⃣ Checkout
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Node setup
+      # 2️⃣ Setup Node.js
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
 
-      # 3️⃣ Build frontend LOCALLY (GitHub runner)
+      # 3️⃣ Frontend dependencies (ONLY if you commit build, this is optional)
       - name: Install frontend deps
         run: npm ci
 
+      # ❌ NO FRONTEND BUILD HERE
+      # You are building locally and committing `build/`
 
-      # 4️⃣ Copy build → backend public folder
+      # 4️⃣ Move committed frontend build into backend
       - name: Move frontend build to server
         run: |
+          ls -la build
           rm -rf server/build
           mv build server/build
 
-      # 5️⃣ Backend env
+      # 5️⃣ Inject backend environment variables
       - name: Inject backend env
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
@@ -44,7 +47,7 @@ jobs:
           echo "RAZORPAY_SECRET=${{ secrets.RAZORPAY_SECRET }}" >> server/.env
           echo "PORT=4000" >> server/.env
 
-      # 6️⃣ Backend deps only
+      # 6️⃣ Install backend dependencies
       - name: Install backend deps
         working-directory: ./server
         run: npm ci
@@ -62,13 +65,18 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
-      # 8️⃣ PM2 restart (backend only)
+      # 🟢 STEP 2 — COPY CODE TO PERMANENT DIRECTORY (CRITICAL)
+      - name: Sync app to permanent directory
+        run: |
+          mkdir -p /home/dev/apps/Actipace
+          rsync -av --delete ./ /home/dev/apps/Actipace/
+
+      # 8️⃣ Restart backend with PM2 (PERMANENT PATH)
       - name: Restart backend
-        working-directory: ./server
         run: |
           export PM2_HOME="/home/dev/.pm2"
           export PATH=$PATH:/home/dev/.npm-global/bin
 
           pm2 delete Actipace || true
-          pm2 start ecosystem.config.js
+          pm2 start /home/dev/apps/Actipace/server/ecosystem.config.js
           pm2 save

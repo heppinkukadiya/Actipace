@@ -3,7 +3,7 @@ module.exports = {
         {
             name: "Actipace",
             script: "index.js",
-            cwd: "/home/dev/Actipace/server",
+            cwd: "/home/dev/apps/Actipace/server",
             env: {
                 NODE_ENV: "production",
                 PORT: 4000
