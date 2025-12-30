@@ -8,23 +8,35 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-    environment: Actipace   # REQUIRED for environment secrets
+    environment: Actipace
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Node.js
-      - name: Setup Node.js
+      # 2️⃣ Node setup
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
 
-      # 3️⃣ Create backend .env file
-      - name: Inject backend environment variables
+      # 3️⃣ Build frontend LOCALLY (GitHub runner)
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      # 4️⃣ Copy build → backend public folder
+      - name: Move frontend build to server
         run: |
-          mkdir -p server
+          rm -rf server/build
+          mv build server/build
+
+      # 5️⃣ Backend env
+      - name: Inject backend env
+        run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
           echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> server/.env
@@ -34,39 +46,31 @@ jobs:
           echo "RAZORPAY_SECRET=${{ secrets.RAZORPAY_SECRET }}" >> server/.env
           echo "PORT=4000" >> server/.env
 
-      # 4️⃣ Install backend dependencies
-      - name: Install backend dependencies
+      # 6️⃣ Backend deps only
+      - name: Install backend deps
         working-directory: ./server
         run: npm ci
 
-      # 5️⃣ Prisma generate
+      # 7️⃣ Prisma
       - name: Prisma Generate
         working-directory: ./server
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
-      # 6️⃣ Prisma migrate deploy
-      - name: Prisma Migrate Deploy
+      - name: Prisma Migrate
         working-directory: ./server
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
-      # 7️⃣ Build frontend
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build frontend
-        run: npm run build
-
-      # 8️⃣ Restart backend with PM2 (CORRECT WAY)
-      - name: Deploy backend with PM2
+      # 8️⃣ PM2 restart (backend only)
+      - name: Restart backend
         working-directory: ./server
         run: |
           export PM2_HOME="/home/dev/.pm2"
           export PATH=$PATH:/home/dev/.npm-global/bin
 
           pm2 delete Actipace || true
-          pm2 start ecosystem.config.js --env production
+          pm2 start ecosystem.config.js
           pm2 save

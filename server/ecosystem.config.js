@@ -2,8 +2,8 @@ module.exports = {
     apps: [
         {
             name: "Actipace",
-            script: "server/index.js",   // ← adjust if your entry file name differs
-            cwd: __dirname,              // ensures PM2 runs in the server folder
+            script: "index.js",
+            cwd: "/home/dev/Actipace/server",
             env: {
                 NODE_ENV: "production",
                 PORT: 4000
