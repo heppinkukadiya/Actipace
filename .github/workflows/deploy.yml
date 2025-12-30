@@ -20,9 +20,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: './server/package-lock.json'
 
       - name: Inject Environment Variables
         run: |
+          mkdir -p server
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
           echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> server/.env
@@ -30,29 +33,29 @@ jobs:
           echo "MAIL_USER=${{ secrets.MAIL_USER }}" >> server/.env
           echo "RAZORPAY_KEY=${{ secrets.RAZORPAY_KEY }}" >> server/.env
           echo "RAZORPAY_SECRET=${{ secrets.RAZORPAY_SECRET }}" >> server/.env
+          chmod 600 server/.env
 
       - name: Install PM2
-        run: npm install -g pm2
+        run: sudo npm install -g pm2
 
       - name: Install dependencies
         working-directory: ./server
         run: npm ci
 
-      - name: Prisma generate
+      - name: Prisma Generate
         working-directory: ./server
-        run: |
-          export $(grep -v '^#' .env | xargs)
-          npx prisma generate
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Prisma migrate deploy
+      - name: Prisma Migrate Deploy
         working-directory: ./server
-        run: |
-          export $(grep -v '^#' .env | xargs)
-          npx prisma migrate deploy
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Deploy & Restart
+      - name: Deploy & Restart with PM2
         working-directory: ./server
         run: |
           pm2 startOrRestart npm --name "Actipace" -- start
           pm2 save
-
