@@ -1,0 +1,58 @@
+name: Node.js CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Inject Environment Variables
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
+          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> server/.env
+          echo "MAIL_PASS=${{ secrets.MAIL_PASS }}" >> server/.env
+          echo "MAIL_USER=${{ secrets.MAIL_USER }}" >> server/.env
+          echo "RAZORPAY_KEY=${{ secrets.RAZORPAY_KEY }}" >> server/.env
+          echo "RAZORPAY_SECRET=${{ secrets.RAZORPAY_SECRET }}" >> server/.env
+
+      - name: Install PM2
+        run: npm install -g pm2
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Prisma generate
+        working-directory: ./server
+        run: |
+          export $(grep -v '^#' .env | xargs)
+          npx prisma generate
+
+      - name: Prisma migrate deploy
+        working-directory: ./server
+        run: |
+          export $(grep -v '^#' .env | xargs)
+          npx prisma migrate deploy
+
+      - name: Deploy & Restart
+        working-directory: ./server
+        run: |
+          pm2 startOrRestart npm --name "Actipace" -- start
+          pm2 save
+
