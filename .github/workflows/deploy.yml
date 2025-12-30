@@ -8,22 +8,19 @@ jobs:
   build:
     runs-on: self-hosted
 
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20.x
 
       - name: Inject Environment Variables
         run: |
           mkdir -p server
+          # We create the .env file for the application to use at runtime
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
           echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> server/.env
@@ -39,18 +36,28 @@ jobs:
       - name: Prisma Generate
         working-directory: ./server
         env:
+          # This fixes the P1012 error by passing the secret directly to the process
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
       - name: Prisma Migrate Deploy
         working-directory: ./server
         env:
+          # This ensures migrations always have the correct DB connection
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
       - name: Deploy & Restart with PM2
         working-directory: ./server
         run: |
-          # Uses the PM2 already installed on the VPS
+          # 1. Force the runner to use your user's PM2 home directory
+          export PM2_HOME="/home/dev/.pm2"
+          
+          # 2. Add the custom npm-global path we set up to the runner's PATH
+          export PATH=$PATH:/home/dev/.npm-global/bin
+          
+          # 3. Start or Restart the app
           pm2 startOrRestart npm --name "Actipace" -- start
+          
+          # 4. Save the list so it survives a server reboot
           pm2 save
