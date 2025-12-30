@@ -20,7 +20,7 @@ jobs:
       - name: Inject Environment Variables
         run: |
           mkdir -p server
-          # We create the .env file for the application to use at runtime
+          # Create the .env file for the application to use at runtime
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
           echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> server/.env
@@ -36,14 +36,14 @@ jobs:
       - name: Prisma Generate
         working-directory: ./server
         env:
-          # This fixes the P1012 error by passing the secret directly to the process
+          # Passes the secret directly to the process to bypass P1012 error
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
       - name: Prisma Migrate Deploy
         working-directory: ./server
         env:
-          # This ensures migrations always have the correct DB connection
+          # Ensures migrations always have the correct DB connection
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
@@ -53,7 +53,7 @@ jobs:
           # 1. Force the runner to use your user's PM2 home directory
           export PM2_HOME="/home/dev/.pm2"
           
-          # 2. Add the custom npm-global path we set up to the runner's PATH
+          # 2. Add the manual npm-global path to the runner's PATH
           export PATH=$PATH:/home/dev/.npm-global/bin
           
           # 3. Start or Restart the app
