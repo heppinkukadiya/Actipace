@@ -6,8 +6,8 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted 
-    environment: Actipace
+    runs-on: self-hosted
+    environment: Actipace   # 🔑 REQUIRED for environment secrets
 
     steps:
       - name: Checkout code
@@ -21,7 +21,6 @@ jobs:
       - name: Inject Environment Variables
         run: |
           mkdir -p server
-          # Create the .env file for the application to use at runtime
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
           echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> server/.env
@@ -34,31 +33,23 @@ jobs:
         working-directory: ./server
         run: npm ci
 
-      - name: Prisma Generate 
+      - name: Prisma Generate
         working-directory: ./server
         env:
-          # Passes the secret directly to the process to bypass P1012 error
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
       - name: Prisma Migrate Deploy
         working-directory: ./server
         env:
-          # Ensures migrations always have the correct DB connection
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
       - name: Deploy & Restart with PM2
         working-directory: ./server
         run: |
-          # 1. Force the runner to use your user's PM2 home directory
           export PM2_HOME="/home/dev/.pm2"
-          
-          # 2. Add the manual npm-global path to the runner's PATH
           export PATH=$PATH:/home/dev/.npm-global/bin
-          
-          # 3. Start or Restart the app
-          pm2 startOrRestart npm --name "Actipace" -- start
-          
-          # 4. Save the list so it survives a server reboot
+
+          pm2 startOrRestart ecosystem.config.js --env production
           pm2 save
