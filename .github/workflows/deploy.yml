@@ -33,7 +33,7 @@ jobs:
         working-directory: ./server
         run: npm ci
 
-      - name: Prisma Generate
+      - name: Prisma Generate 
         working-directory: ./server
         env:
           # Passes the secret directly to the process to bypass P1012 error
