@@ -12,12 +12,12 @@ const PORT = process.env.PORT || 4000
 
 app.use(express.json());
 app.use(coockiePaser());
-// app.use(
-//     cors({
-//         origin:"https://www.actipace.com",
-//         credentials:true,
-//     })
-// )
+app.use(
+    cors({
+        origin:true,
+        credentials:true,
+    })
+)
 
 const signup = require("./routes/Routes");
 
