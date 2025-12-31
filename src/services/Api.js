@@ -1,4 +1,7 @@
-const BASE_URL = "https://www.actipace.com/api/v1"
+// const BASE_URL = "https://www.actipace.com/api/v1"
+const BASE_URL = "http://72.61.246.113:4000/api/v1"
+
+
 //
 
 export const categories = {
