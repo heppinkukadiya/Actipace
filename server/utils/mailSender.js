@@ -5,8 +5,8 @@ const mailSender = async (email, title, body) => {
     try {
 
         const client = new SendMailClient({
-            url: process.env.ZEPTOMAIL_URL,
-            token: process.env.ZEPTOMAIL_API_KEY
+            url: process.env.ZEPTO_URL,
+            token: process.env.ZEPTO_TOKEN
         });
 
 

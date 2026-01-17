@@ -17,5 +17,9 @@ export const categories = {
     CHECKPLAN:BASE_URL + "/checkplan",
     CONTACT:BASE_URL + "/contact",
     SUPPORT:BASE_URL + "/support",
-    DASHBOARD:BASE_URL + "/dashboard"
+    DASHBOARD:BASE_URL + "/dashboard",
+    PAYPAL_CREATE_ORDER_API:BASE_URL +  "/create-order",
+    PAYPAL_CAPTURE_ORDER_API:BASE_URL +  "/verify",
+
+
 }
