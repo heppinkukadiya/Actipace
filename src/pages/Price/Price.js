@@ -69,7 +69,7 @@ function Price() {
                 if (curr === "USD") {
                     const rate = await getFrankRate();
                     if (rate) {
-                        const converted = amount.data.amount.price * rate;
+                        const converted = amount.data.amount.price / rate;
                         setamountA(Number(converted.toFixed(2)));
                     }
                 } else {
@@ -97,7 +97,7 @@ function Price() {
                 if (curr === "USD") {
                     const rate = await getFrankRate();
                     if (rate) {
-                        const converted = amount.data.amount.price * rate;
+                        const converted = amount.data.amount.price / rate;
                         setamountB(Number(converted.toFixed(2)));
                     }
                 } else {
@@ -125,7 +125,7 @@ function Price() {
                 if (curr === "USD") {
                     const rate = await getFrankRate();
                     if (rate) {
-                        const converted = amount.data.amount.price * rate;
+                        const converted = amount.data.amount.price / rate;
                         setamountC(Number(converted.toFixed(2)));
                     }
                 } else {
