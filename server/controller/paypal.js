@@ -270,6 +270,45 @@ export const verifyPayPalPayment = async (req, res) => {
                 .replace("{{licenseKeys}}", licenseKeysHtml);
 
             // ✅ SAME email send
+
+
+            const getProductPrefix = (softwareId) => {
+                if (softwareId === 1) return "TS";
+                if (softwareId === 2) return "IS";
+                return "BD";
+            };
+
+            const buildProductCode = ({ softwareId, devices, year }) => {
+                const prefix = getProductPrefix(Number(softwareId));
+                return `${prefix}${devices}U${year}Y`;
+            };
+
+            const product_code = buildProductCode({
+                softwareId: currentPurchase.software.software_id,
+                devices: currentPurchase.softwarePlan.devices,
+                year: currentPurchase.softwarePlan.year,
+            });
+
+            const invoiceParams = {
+                name: currentPurchase.fullName,
+                email: currentPurchase.email,
+                product_code,
+                paid: price,
+            };
+
+// ✅ only include GST if user entered GSTIN
+            if (currentPurchase.gstin && currentPurchase.gstin.trim() !== "") {
+                invoiceParams.gst = currentPurchase.gstin;
+            }
+
+// ✅ Call external Invoice API
+            await axios.get("https://actipace.com/invoice/api.php", {
+                params: invoiceParams,
+            });
+
+
+
+
             await mailSender(
                 currentPurchase.email,
                 "your device licence keys",

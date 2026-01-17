@@ -286,6 +286,45 @@ exports.verifySignature = async (req,res) =>{
 
                         await mailSender(currentPurchase.email,"your device licence keys",populatedTemplate);
 
+            const getProductPrefix = (softwareId) => {
+                if (Number(softwareId) === 1) return "TS";
+                if (Number(softwareId) === 2) return "IS";
+                return "BD";
+            };
+
+            const buildProductCode = ({ softwareId, devices, year }) => {
+                const prefix = getProductPrefix(softwareId);
+                return `${prefix}${devices}U${year}Y`;
+            };
+
+            // ✅ Build Product Code like TS1U1Y / IS2U3Y / BD5U3Y
+            const product_code = buildProductCode({
+                softwareId: currentPurchase.software.software_id,
+                devices: currentPurchase.softwarePlan.devices,
+                year: currentPurchase.softwarePlan.year,
+            });
+
+// ✅ Invoice API params
+            const invoiceParams = {
+                name: currentPurchase.fullName,
+                email: currentPurchase.email,
+                product_code,
+                paid: price,
+            };
+
+// ✅ Add GST only if available
+            if (currentPurchase.gstin && currentPurchase.gstin.trim() !== "") {
+                invoiceParams.gst = currentPurchase.gstin;
+            }
+
+// ✅ External invoice API call
+            await axios.get("https://actipace.com/invoice/api.php", {
+                params: invoiceParams,
+            });
+
+
+
+
             const IST_OFFSET = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
             const currentDate = new Date(); // Current UTC time
 
