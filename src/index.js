@@ -49,7 +49,7 @@ function RootApp() {
                     <PayPalScriptProvider
                         options={{
                             "client-id":
-                                "ARIIvWWyxIILPuos_jcKUqlT1_m0ewcfvQWaccT9J62efYSl1SpOKRrfIIH2CWsJfGO9Ep9nQWbxPaEK",
+                                "AYLxK_A1L503hPHQTES--LW1Q2_bfRk5rBDh5f2dtGzi0H9odMJ29TsVbigzIQMWFavCUWcH4-M_1Wiz",
                             currency: "USD",
                         }}
                     >
