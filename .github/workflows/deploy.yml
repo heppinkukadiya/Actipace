@@ -33,11 +33,11 @@ jobs:
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > server/.env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
-          echo "JWT_SECRET=${{ secrets.ZEPTO_TOKEN }}" >> server/.env
-          echo "JWT_SECRET=${{ secrets.ZEPTO_URL }}" >> server/.env
-          echo "JWT_SECRET=${{ secrets.MAIL_FROM }}" >> server/.env
-          echo "JWT_SECRET=${{ secrets.PAYPAL_CLIENT_ID }}" >> server/.env
-          echo "JWT_SECRET=${{ secrets.PAYPAL_CLIENT_SECRET }}" >> server/.env
+          echo "ZEPTO_TOKEN=${{ secrets.ZEPTO_TOKEN }}" >> server/.env
+          echo "ZEPTO_URL=${{ secrets.ZEPTO_URL }}" >> server/.env
+          echo "MAIL_FROM=${{ secrets.MAIL_FROM }}" >> server/.env
+          echo "PAYPAL_CLIENT_ID=${{ secrets.PAYPAL_CLIENT_ID }}" >> server/.env
+          echo "PAYPAL_CLIENT_SECRET=${{ secrets.PAYPAL_CLIENT_SECRET }}" >> server/.env
           echo "RAZORPAY_KEY=${{ secrets.RAZORPAY_KEY }}" >> server/.env
           echo "RAZORPAY_SECRET=${{ secrets.RAZORPAY_SECRET }}" >> server/.env
           echo "PORT=4000" >> server/.env
