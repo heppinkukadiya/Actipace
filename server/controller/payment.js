@@ -96,15 +96,15 @@ exports.capturePayment = async (req,res) =>{
                 email:email
             }
         }
-       
+
         //console.log("option",option);
         //payment
         try{
-           
+
             const paymentResponse = await instance.orders.create(option);
             //console.log("res",paymentResponse)
 
-           
+
 
             const ress = await axios.get(`https://actipace.com/091224/api2.php?action=add&orderid=${paymentResponse.id}`)
             //console.log(ress);
@@ -222,7 +222,6 @@ exports.verifySignature = async (req,res) =>{
                 where: { orderId: razorpay_order_id},
                 include:{softwarePlan:true,software:true}
             });
-            console.log("cureent purchase.......",currentPurchase)
 
             if (!currentPurchase) {
                             return res.status(404).json({
@@ -244,7 +243,7 @@ exports.verifySignature = async (req,res) =>{
                         {
                             pr="bd"
                         }
-                        //client api calling 
+                        //client api calling
 
                         const parts = await axios.get(`https://actipace.com/091224/api.php?orderid=${razorpay_order_id}&product=${pr}&devices=${currentPurchase.softwarePlan.devices}&validity=${currentPurchase.softwarePlan.year*365}`)
 
@@ -271,7 +270,7 @@ exports.verifySignature = async (req,res) =>{
                             validity: `${currentPurchase.softwarePlan.year} year`,
                             licenseKeys: codes,
                           };
-    
+
                           const licenseKeysHtml = orderDetails.licenseKeys
                                                     .map((key) => `<li>${key}</li>`)
                                                     .join('');
@@ -321,7 +320,7 @@ exports.verifySignature = async (req,res) =>{
 
                 success:false,
                 message:"action is not fulfiled"
-            })            
+            })
 
         }
     }

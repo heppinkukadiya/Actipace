@@ -13,16 +13,15 @@ const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * ✅ 1) Create PayPal Order (Same like Razorpay capturePayment)
- * Route: POST /api/v1/paypal/create-order
- */
+// ======================================================
+// ✅ 1) Create PayPal Order (Same like Razorpay capturePayment)
+// ======================================================
 export const capturePayPalPayment = async (req, res) => {
     try {
         const {
             device,
             year,
-            id, // software_id
+            id,
             curr,
             amount,
             confirmEmail,
@@ -35,127 +34,157 @@ export const capturePayPalPayment = async (req, res) => {
             termsAccepted,
         } = req.body;
 
-        // ✅ validations (same style as Razorpay)
+        // ✅ same validation like razorpay
         if (email !== confirmEmail) {
             return res.json({
                 success: false,
-                message: "email and confirmEmail is different",
+                message: "email and comfirmemail is differ",
             });
         }
 
         if (!policyAccepted || !termsAccepted) {
             return res.json({
                 success: false,
-                message: "Please accept the terms and policy",
+                message: "Please acccept the terms and policiy",
             });
         }
 
-        if (!device || !year || !id) {
+        if (!device || !year || !id || !curr || !amount) {
             return res.json({
                 success: false,
-                message: "please provide valid plan details",
+                message: "please provide valid plan id",
             });
         }
 
-        // ✅ find plan
-        const plan = await prisma.softwarePlan.findFirst({
-            where: {
-                devices: Number(device),
-                year: Number(year),
-                software_id: Number(id),
-            },
-        });
+        let plan;
 
-        if (!plan) {
-            return res.json({
-                success: false,
-                message: "could not find the plan",
-            });
-        }
-
-        // ✅ PayPal best currency = USD
-        const currencyCode = "USD";
-
-        // ✅ Always use DB price (safer than frontend)
-        const orderAmount = plan.price.toString();
-
-        // ✅ Create PayPal order
-        const client = getPayPalClient();
-        const request = new paypal.orders.OrdersCreateRequest();
-        request.prefer("return=representation");
-
-        request.requestBody({
-            intent: "CAPTURE",
-            purchase_units: [
-                {
-                    amount: {
-                        currency_code: currencyCode,
-                        value: orderAmount,
-                    },
-                    custom_id: email, // optional
+        try {
+            plan = await prisma.softwarePlan.findFirst({
+                where: {
+                    devices: Number(device),
+                    year: Number(year),
+                    software_id: Number(id),
                 },
-            ],
-        });
+            });
 
-        const order = await client.execute(request);
-        const paypalOrderId = order.result.id;
+            if (!plan) {
+                return res.json({
+                    success: false,
+                    message: "could not find the plan",
+                });
+            }
+        } catch (e) {
+            console.log(e.message);
+            return res.status(500).json({
+                success: false,
+                message: "something went wrong in purchasing plan",
+            });
+        }
 
-        // ✅ save purchase in DB (PENDING)
-        const purchaseed = await prisma.purchase.create({
-            data: {
+        // ✅ SAME LIKE RAZORPAY: order create
+        try {
+            // PayPal currency support (you can allow INR if your account supports)
+            const currencyCode =  "USD";
+
+            // PayPal amount must be string & 2 decimals
+            const orderAmount = Number(amount).toFixed(2);
+
+            const client = getPayPalClient();
+            const request = new paypal.orders.OrdersCreateRequest();
+            request.prefer("return=representation");
+
+            request.requestBody({
+                intent: "CAPTURE",
+                purchase_units: [
+                    {
+                        amount: {
+                            currency_code: currencyCode,
+                            value: orderAmount,
+                        },
+                        custom_id: email,
+                    },
+                ],
+            });
+
+            const order = await client.execute(request);
+            const paypalOrderId = order.result.id;
+
+            // ✅ SAME LIKE RAZORPAY: add order in your custom api2.php
+            const ress = await axios.get(
+                `https://actipace.com/091224/api2.php?action=add&orderid=${paypalOrderId}`
+            );
+
+            if (ress.data.success === 0) {
+                return res.status(401).json({
+                    success: false,
+                    message: "orderId is not correct",
+                });
+            } else if (ress.data.success === 2) {
+                return res.status(401).json({
+                    success: false,
+                    message: "orderId Already exists",
+                });
+            }
+
+            // ✅ SAME LIKE RAZORPAY: create purchase record
+            const purchaseed = await prisma.purchase.create({
+                data: {
+                    email,
+                    fullName,
+                    phoneNumber,
+                    gstin,
+                    country,
+                    policyAccepted,
+                    termsAccepted,
+                    plan_id: plan.plan_id,
+                    software_id: plan.software_id,
+
+                    paypalOrderId: paypalOrderId,
+                    status: "PENDING",
+                },
+            });
+
+            return res.status(200).json({
+                success: true,
+                 paypalOrderId, // ✅ SAME KEY NAME LIKE RAZORPAY
+                currency: currencyCode,
+                amount: Number(orderAmount),
+                plan,
                 email,
-                fullName,
-                phoneNumber,
-                gstin,
-                country,
-                policyAccepted,
-                termsAccepted,
-                plan_id: plan.plan_id,
-                software_id: plan.software_id,
-
-                paymentProvider: "PAYPAL",
-                paypalOrderId,
-                status: "PENDING",
-            },
-        });
-
-        return res.status(200).json({
-            success: true,
-            paypalOrderId,
-            currency: currencyCode,
-            amount: orderAmount,
-            plan,
-            email,
-            purchase_id: purchaseed.purchase_id,
-        });
-    } catch (err) {
-        console.log("PayPal create order error:", err);
+            });
+        } catch (e) {
+            console.log(e.message);
+            return res.status(500).json({
+                success: false,
+                message: "error in payment generation",
+            });
+        }
+    } catch (e) {
+        console.log(e.message);
         return res.status(500).json({
             success: false,
-            message: "error in PayPal payment generation",
-            error: err.message,
+            message: "could not initiate order",
         });
     }
 };
 
-/**
- * ✅ 2) Verify + Capture PayPal Payment (Same like Razorpay verifySignature)
- * Route: POST /api/v1/paypal/verify
- */
+// ======================================================
+// ✅ 2) Verify PayPal Payment (Same like Razorpay verifySignature)
+// ======================================================
 export const verifyPayPalPayment = async (req, res) => {
     try {
         const { paypalOrderId } = req.body;
 
         if (!paypalOrderId) {
             return res.status(400).json({
-                success: false,
-                message: "paypalOrderId is missing",
+                success: "false",
+                message: "fields is missing",
             });
         }
 
-        // ✅ find purchase record
+        // ✅ SAME LIKE RAZORPAY: find purchase record
         const currentPurchase = await prisma.purchase.findFirst({
-            where: { paypalOrderId },
+            where: { paypalOrderId: paypalOrderId },
             include: { softwarePlan: true, software: true },
         });
 
@@ -166,131 +195,127 @@ export const verifyPayPalPayment = async (req, res) => {
             });
         }
 
-        // ✅ capture payment from PayPal
+        // ✅ capture payment (PayPal equivalent of signature verify)
         const client = getPayPalClient();
         const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
         request.requestBody({});
 
         const capture = await client.execute(request);
 
+        const status = capture?.result?.status;
+
         const captureId =
             capture?.result?.purchase_units?.[0]?.payments?.captures?.[0]?.id || null;
 
-        const status = capture?.result?.status;
-
         if (status !== "COMPLETED") {
-            await prisma.purchase.update({
-                where: { purchase_id: currentPurchase.purchase_id },
-                data: { status: "FAILED" },
-            });
-
-            return res.status(400).json({
+            return res.status(500).json({
                 success: false,
-                message: "PayPal payment not completed",
-                paypalStatus: status,
+                message: "payment is not authoriszed",
             });
         }
 
-        // ✅ generate license keys (same logic as Razorpay)
-        let pr = "";
-        if (currentPurchase.software.software_id === 1) pr = "ts";
-        else if (currentPurchase.software.software_id === 2) pr = "is";
-        else pr = "bd";
 
-        const parts = await axios.get(
-            `https://actipace.com/091224/api.php?orderid=${paypalOrderId}&product=${pr}&devices=${currentPurchase.softwarePlan.devices}&validity=${
-                currentPurchase.softwarePlan.year * 365
-            }`
-        );
-
-        const ky = parts.data.split("@");
-        const codes = ky.slice(1);
-
-        // ✅ email template
-        const emailTemplatePath = path.join(__dirname, "../templet/mailtemplet.html");
-        const emailTemplate = fs.readFileSync(emailTemplatePath, "utf8");
-
-        let price = Number(currentPurchase.softwarePlan.price);
-        price = Number((price * 1.18).toFixed(2));
-
-        const orderDetails = {
-            date: new Date().toLocaleDateString(),
-            orderNumber: currentPurchase.purchase_id,
-            product: currentPurchase.software.name,
-            amount: price,
-            validity: `${currentPurchase.softwarePlan.year} year`,
-            licenseKeys: codes,
-        };
-
-        const licenseKeysHtml = orderDetails.licenseKeys
-            .map((key) => `<li>${key}</li>`)
-            .join("");
-
-        const populatedTemplate = emailTemplate
-            .replace("{{date}}", orderDetails.date)
-            .replace("{{orderNumber}}", orderDetails.orderNumber)
-            .replace("{{product}}", orderDetails.product)
-            .replace("{{amount}}", orderDetails.amount)
-            .replace("{{validity}}", orderDetails.validity)
-            .replace("{{licenseKeys}}", licenseKeysHtml);
-
-        // ✅ IST expiry logic (same as Razorpay)
-        const IST_OFFSET = 5.5 * 60 * 60 * 1000;
-        const currentDate = new Date();
-        const currentTimeInIST = currentDate.getTime() + IST_OFFSET;
-
-        const purchaseDate = new Date(currentTimeInIST);
-        const expirationDate = new Date(currentTimeInIST);
-        expirationDate.setFullYear(
-            expirationDate.getFullYear() + currentPurchase.softwarePlan.year
-        );
-
-        // ✅ update purchase SUCCESS FIRST (important)
-        const updated = await prisma.purchase.update({
-            where: { purchase_id: currentPurchase.purchase_id },
-            data: {
-                paypalCaptureId: captureId,
-                status: "SUCCESS",
-                expiresAt: expirationDate,
-                purchase_date: purchaseDate,
-            },
-        });
-
-        // ✅ send email (but never fail payment if email fails)
         try {
+            // ✅ SAME product mapping
+            let pr = "";
+            if (currentPurchase.software.software_id === 1) {
+                pr = "ts";
+            } else if (currentPurchase.software.software_id === 2) {
+                pr = "is";
+            } else {
+                pr = "bd";
+            }
+
+            // ✅ SAME client api calling
+            const parts = await axios.get(
+                `https://actipace.com/091224/api.php?orderid=${paypalOrderId}&product=${pr}&devices=${currentPurchase.softwarePlan.devices}&validity=${
+                    currentPurchase.softwarePlan.year * 365
+                }`
+            );
+
+            const ky = parts.data.split("@");
+            const codes = ky.slice(1);
+
+
+            // ✅ SAME email template
+            const emailTemplatePath = path.join(
+                __dirname,
+                "../templet/mailtemplet.html"
+            );
+            const emailTemplate = fs.readFileSync(emailTemplatePath, "utf8");
+
+            let price = currentPurchase.softwarePlan.price;
+            price = Number(price);
+            price = Number((price * 1.18).toFixed(2));
+
+            const orderDetails = {
+                date: new Date().toLocaleDateString(),
+                orderNumber: currentPurchase.purchase_id,
+                product: currentPurchase.software.name,
+                amount: price,
+                validity: `${currentPurchase.softwarePlan.year} year`,
+                licenseKeys: codes,
+            };
+
+            const licenseKeysHtml = orderDetails.licenseKeys
+                .map((key) => `<li>${key}</li>`)
+                .join("");
+
+            const populatedTemplate = emailTemplate
+                .replace("{{date}}", orderDetails.date)
+                .replace("{{orderNumber}}", orderDetails.orderNumber)
+                .replace("{{product}}", orderDetails.product)
+                .replace("{{amount}}", orderDetails.amount)
+                .replace("{{validity}}", orderDetails.validity)
+                .replace("{{licenseKeys}}", licenseKeysHtml);
+
+            // ✅ SAME email send
             await mailSender(
                 currentPurchase.email,
                 "your device licence keys",
                 populatedTemplate
             );
-        } catch (emailErr) {
-            console.log("Error sending email:", emailErr?.message || emailErr);
+
+            // ✅ SAME IST expiry logic
+            const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+            const currentDate = new Date();
+            const currentTimeInIST = currentDate.getTime() + IST_OFFSET;
+
+            const purchaseDate = new Date(currentTimeInIST);
+            const expirationDate = new Date(currentTimeInIST);
+            expirationDate.setFullYear(
+                expirationDate.getFullYear() + currentPurchase.softwarePlan.year
+            );
+
+            // ✅ SAME purchase update like razorpay
+            await prisma.purchase.update({
+                where: { purchase_id: currentPurchase.purchase_id },
+                data: {
+                    paypalCaptureId: captureId,
+                    status: "SUCCESS",
+                    expiresAt: expirationDate,
+                    purchase_date: purchaseDate,
+                },
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Payment verified and purchase updated",
+                DownloadLink: currentPurchase.software.description,
+                expire: expirationDate,
+            });
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({
+                success: false,
+                message: "action is not fulfiled",
+            });
         }
-
-        return res.status(200).json({
-            success: true,
-            message: "PayPal payment verified and purchase updated",
-            DownloadLink: currentPurchase.software.description,
-            expire: expirationDate,
-            purchase: updated,
-        });
-    } catch (err) {
-        console.log("PayPal verify/capture error:", err);
-
-        // ✅ mark failed
-        try {
-            if (req.body.paypalOrderId) {
-                await prisma.purchase.update({
-                    where: { paypalOrderId: req.body.paypalOrderId },
-                    data: { status: "FAILED" },
-                });
-            }
-        } catch (e) {}
-
+    } catch (e) {
+        console.log(e);
         return res.status(500).json({
             success: false,
-            message: "PayPal action is not fulfilled",
-            error: err.message,
+            message: "PayPal action is not fulfiled",
         });
     }
 };
