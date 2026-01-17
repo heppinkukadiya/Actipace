@@ -43,12 +43,12 @@ function Price() {
     const [amountC, setamountC] = useState(0);
 
     // Frankfurter exchange rate INR -> USD
-    async function getFrankRate(from, to) {
+    async function getFrankRate() {
         try {
             const res = await axios.get(
-                `https://api.frankfurter.app/latest?from=${from}&to=${to}`
+                `https://actipace.com/currency/apiforinr.php`
             );
-            return res.data.rates[to];
+            return Number(res.data);
         } catch (error) {
             toast.error("Error fetching exchange rates");
             return null;
@@ -67,7 +67,7 @@ function Price() {
                 const amount = await axios.post(categories.GETPLAN_API, data);
 
                 if (curr === "USD") {
-                    const rate = await getFrankRate("INR", "USD");
+                    const rate = await getFrankRate();
                     if (rate) {
                         const converted = amount.data.amount.price * rate;
                         setamountA(Number(converted.toFixed(2)));
@@ -95,7 +95,7 @@ function Price() {
                 const amount = await axios.post(categories.GETPLAN_API, data);
 
                 if (curr === "USD") {
-                    const rate = await getFrankRate("INR", "USD");
+                    const rate = await getFrankRate();
                     if (rate) {
                         const converted = amount.data.amount.price * rate;
                         setamountB(Number(converted.toFixed(2)));
@@ -123,7 +123,7 @@ function Price() {
                 const amount = await axios.post(categories.GETPLAN_API, data);
 
                 if (curr === "USD") {
-                    const rate = await getFrankRate("INR", "USD");
+                    const rate = await getFrankRate();
                     if (rate) {
                         const converted = amount.data.amount.price * rate;
                         setamountC(Number(converted.toFixed(2)));
