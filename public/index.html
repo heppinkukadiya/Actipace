@@ -2,66 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-
-    <!-- Favicon -->
-    <link rel="icon" href="https://www.actipace.com/favicon.png" type="image/png" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="We provide the best security antivirus software to keep you safe online." />
 
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="https://www.actipace.com/favicon.png" />
+    <title>Actipace</title>
 
+    <style>
+        /* Force background color immediately to prevent white flash */
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            height: 100%;
+            overflow: hidden; /* Prevent scrolling while loading */
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999; /* Stay on top of everything */
+            transition: opacity 0.4s ease-out, visibility 0.4s;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .preloader-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .preloader-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .preloader-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #111827;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .preloader-text {
+            font-weight: 600;
+            color: #111827;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Classes to hide loader */
+        .loader-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Restore scrolling after load */
+        body.loaded {
+            overflow: auto;
+        }
+    </style>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="https://www.actipace.com/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="https://www.actipace.com/favicon.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Actipace - Best Security Antivirus Software" />
-    <meta property="og:description" content="We provide the best security antivirus software to keep you safe online." />
     <meta property="og:image" content="https://www.actipace.com/favicon.png" />
-    <meta property="og:image:alt" content="Actipace Logo" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://actipace.com" />
-
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Actipace - Best Security Antivirus Software" />
-    <meta name="twitter:description" content="We provide the best security antivirus software to keep you safe online." />
-    <meta name="twitter:image" content="https://www.actipace.com/favicon.png" />
-    <meta name="twitter:image:alt" content="Actipace Logo" />
-
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "Actipace",
-            "url": "https://actipace.com",
-            "logo": "https://www.actipace.com/favicon.png",
-            "description": "We provide the best security antivirus software to keep you safe online."
-        }
-    </script>
-
-    <script>
-        var _paq = window._paq = window._paq || [];
-        _paq.push(['trackPageView']);
-        _paq.push(['enableLinkTracking']);
-        (function() {
-            var u="//actipace.com/analytics/";
-            _paq.push(['setTrackerUrl', u+'matomo.php']);
-            _paq.push(['setSiteId', '1']);
-            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-        })();
-    </script>
-
-    <title>Actipace</title>
 </head>
 
 <body>
 <noscript>You need to enable JavaScript to run this app.</noscript>
+
+<div id="preloader">
+    <div class="preloader-box">
+        <img class="preloader-logo" src="https://www.actipace.com/favicon.png" alt="Actipace Logo">
+        <div class="preloader-spinner"></div>
+        <p class="preloader-text">Loading Actipace...</p>
+    </div>
+</div>
+
 <div id="root"></div>
+
+<script>
+    // This function runs once everything (JS, CSS, Images) is fully loaded
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('preloader');
+
+        // Give React a tiny 100ms head start to paint the first frame
+        setTimeout(() => {
+            loader.classList.add('loader-hidden');
+            document.body.classList.add('loaded');
+        }, 100);
+    });
+</script>
+
+<script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+        var u="//actipace.com/analytics/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+</script>
 </body>
 </html>

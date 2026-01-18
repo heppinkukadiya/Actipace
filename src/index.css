@@ -5,6 +5,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+    height: 100%;
+    background: white;
+}
+
+
 /* Add Kalam font */
 
 /* Inter (already added) */
