@@ -15,6 +15,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Fix permissions so runner can delete files after job
+      - name: Fix workspace ownership
+        run: |
+          sudo chown -R $(whoami):$(whoami) $GITHUB_WORKSPACE
+
       # Node
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -22,7 +27,6 @@ jobs:
           node-version: 20.x
 
       # Frontend build is already COMMITTED
-      # Just verify it exists
       - name: Verify frontend build
         run: |
           ls -la build
@@ -60,18 +64,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
 
-      # 🔑 COPY TO PERMANENT DIRECTORY
+      # COPY TO PERMANENT DIRECTORY
       - name: Sync app to permanent directory
         run: |
-          mkdir -p /home/dev/apps/Actipace
-          rsync -av --delete ./ /home/dev/apps/Actipace/
-
-      # Restart backend
-      - name: Restart backend
-        run: |
-          export PM2_HOME="/home/dev/.pm2"
-          export PATH=$PATH:/home/dev/.npm-global/bin
-
-          pm2 delete Actipace || true
-          pm2 start /home/dev/apps/Actipace/server/ecosystem.config.js
-          pm2 save
+          sudo mkdir -p /home/dev/apps/Actipace
+          sudo rsync -av --delete ./ /home/dev/apps/Actipace/
+          sudo chown -R dev:dev /home/dev/apps/Actipace
