@@ -54,6 +54,7 @@ export async function buycourse(data,navigate) {
 
         }
 
+
         const paymentObject = new window.Razorpay(options);
         paymentObject.open();
         //return link;
@@ -75,7 +76,6 @@ async function verifyPayment(response,navigate,orderResponse) {
     const toastId = toast.loading("loading..")
     try{
 
-        console.log(orderResponse);
         const reasponse = await axios.post(categories.VERIFYSIGNATURE_API,response,{
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
@@ -93,7 +93,6 @@ async function verifyPayment(response,navigate,orderResponse) {
         //return response;
 
     }catch(e){
-        console.log("PAYMENT VERIFY ERROR....",e);
         toast.error(e.response.data.message)
     }
 

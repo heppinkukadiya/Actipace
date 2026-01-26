@@ -12,7 +12,7 @@ const SmartsuppChat = () => {
         // Initialize the _smartsupp object
         script.onload = () => {
             window._smartsupp = window._smartsupp || {};
-            window._smartsupp.key = process.env.CHAT_APP_KEY;
+            window._smartsupp.key = 'bef598aedebb1a69759d2300d1421239b3d2a7ec';
         };
 
         // Append the script to the body

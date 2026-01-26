@@ -10,6 +10,7 @@ const { support } = require('../controller/support');
 const { dashboard } = require('../controller/dashboard');
 const { totalsecurity , basicdefence,internetsecurity } = require('../controller/downloadlink');
 const {capturePayPalPayment, verifyPayPalPayment} = require("../controller/paypal");
+const {getPublicConfig} = require("../controller/configController")
 const router = express.Router();
 
 router.post("/otpsender",otpSender);
@@ -28,6 +29,7 @@ router.post("/verifySignature",verifySignature);
 router.post("/create-order", capturePayPalPayment);
 router.post("/verify", verifyPayPalPayment);
 
+router.get("/config", getPublicConfig);
 
 
 router.post("/getplan",getplan);

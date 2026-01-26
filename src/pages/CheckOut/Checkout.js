@@ -57,7 +57,6 @@ const Checkout = () => {
         const Data = { ...formData, ...data };
 
         data.amount = amt;
-        console.log(data);
 
         await buycourse(Data, navigate);
     };

@@ -42,14 +42,14 @@ function CurrencyLoader({ children }) {
 }
 
 function RootApp() {
-
     return (
         <React.StrictMode>
             <RecoilRoot>
                 <CurrencyLoader>
                     <PayPalScriptProvider
                         options={{
-                            "client-id": process.env.PAYPAL_CLIENT_ID,
+                            "client-id":
+                                "AYLxK_A1L503hPHQTES--LW1Q2_bfRk5rBDh5f2dtGzi0H9odMJ29TsVbigzIQMWFavCUWcH4-M_1Wiz",
                             currency: "USD",
                         }}
                     >
