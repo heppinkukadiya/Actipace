@@ -9,7 +9,7 @@ export const getPayPalClient = () => {
     }
 
     const environment =
-             new paypal.core.SandboxEnvironment(clientId, clientSecret);
+             new paypal.core.LiveEnvironment(clientId, clientSecret);
 
     return new paypal.core.PayPalHttpClient(environment);
 };
