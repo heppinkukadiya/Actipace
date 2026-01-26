@@ -17,14 +17,14 @@ function loadScript(src){
             resolve(false)
         }
         document.body.appendChild(script);
-    })  
+    })
 }
 
 export async function buycourse(data,navigate) {
    // console.log(localStorage.getItem('token'))
    const toastId = toast.loading("loading...")
     try{
-        
+
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
         if(!res){
             toast.error("Razorpay SDK failure")
@@ -47,12 +47,8 @@ export async function buycourse(data,navigate) {
             order_id:orderResponse.data.payment_id,
             name:"Actipace",
             description:"Thank you for purchasing the software",
-            prefill:{
-                name:"harsh"
-            },
             handler: function(response){
                 //verifypayment
-                console.log("hello");
                 verifyPayment(response,navigate,orderResponse);
             }
 
@@ -61,14 +57,14 @@ export async function buycourse(data,navigate) {
         const paymentObject = new window.Razorpay(options);
         paymentObject.open();
         //return link;
-        
+
     }catch(e){
         // console.log("PAYMENT IN ERROR....",e);
         // console.log("could not make payment")
         toast.error(e.response.data.message);
         //navigate("/login")
-        
-    } 
+
+    }
     toast.dismiss(toastId)
 }
 
@@ -78,7 +74,7 @@ async function verifyPayment(response,navigate,orderResponse) {
 
     const toastId = toast.loading("loading..")
     try{
-        
+
         console.log(orderResponse);
         const reasponse = await axios.post(categories.VERIFYSIGNATURE_API,response,{
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -92,14 +88,14 @@ async function verifyPayment(response,navigate,orderResponse) {
             toast.success("payment Successfull")
             navigate("/login")
         }
-        
-        
+
+
         //return response;
-        
+
     }catch(e){
         console.log("PAYMENT VERIFY ERROR....",e);
         toast.error(e.response.data.message)
     }
 
-    toast.dismiss(toastId)   
+    toast.dismiss(toastId)
 }

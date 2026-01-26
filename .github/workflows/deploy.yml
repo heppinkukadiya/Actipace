@@ -40,6 +40,7 @@ jobs:
           echo "PAYPAL_CLIENT_SECRET=${{ secrets.PAYPAL_CLIENT_SECRET }}" >> server/.env
           echo "RAZORPAY_KEY=${{ secrets.RAZORPAY_KEY }}" >> server/.env
           echo "RAZORPAY_SECRET=${{ secrets.RAZORPAY_SECRET }}" >> server/.env
+          echo "CHAT_APP_KEY=${{ secrets.CHAT_APP_KEY }}" >> server/.env
           echo "PORT=4000" >> server/.env
 
       # Backend deps

@@ -20,6 +20,5 @@ export const categories = {
     DASHBOARD:BASE_URL + "/dashboard",
     PAYPAL_CREATE_ORDER_API:BASE_URL +  "/create-order",
     PAYPAL_CAPTURE_ORDER_API:BASE_URL +  "/verify",
-
-
+    CONFIG_API: BASE_URL + "/config"
 }
