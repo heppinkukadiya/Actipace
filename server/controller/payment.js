@@ -284,7 +284,11 @@ exports.verifySignature = async (req,res) =>{
                             .replace('{{licenseKeys}}', licenseKeysHtml);
            // console.log("ky",ky);
 
-                        await mailSender(currentPurchase.email,"your device licence keys",populatedTemplate);
+
+            mailSender(currentPurchase.email, "your device licence keys", populatedTemplate)
+                .catch(err => {
+                    console.error("Email failed:", err.message);
+                });
 
             const getProductPrefix = (softwareId) => {
                 if (Number(softwareId) === 1) return "TS";
@@ -304,7 +308,6 @@ exports.verifySignature = async (req,res) =>{
                 year: currentPurchase.softwarePlan.year,
             });
 
-// ✅ Invoice API params
             const invoiceParams = {
                 name: currentPurchase.fullName,
                 email: currentPurchase.email,
@@ -312,16 +315,19 @@ exports.verifySignature = async (req,res) =>{
                 paid: price,
             };
 
-// ✅ Add GST only if available
             if (currentPurchase.gstin && currentPurchase.gstin.trim() !== "") {
                 invoiceParams.gst = currentPurchase.gstin;
             }
 
-// ✅ External invoice API call
-            await axios.get("https://actipace.com/invoice/api.php", {
-                params: invoiceParams,
-            });
 
+
+            axios
+                .get("https://actipace.com/invoice/api.php", {
+                    params: invoiceParams,
+                })
+                .catch(err => {
+                    console.error("Invoice API failed:", err.message);
+                });
 
 
 
@@ -346,6 +352,9 @@ exports.verifySignature = async (req,res) =>{
                 },
             });
 
+
+
+
             return res.status(200).json({
                 success: true,
                 message: "Payment verified and purchase updated",
@@ -353,12 +362,13 @@ exports.verifySignature = async (req,res) =>{
                 expire:expirationDate
             });
 
+
         }catch(e){
             console.log(e);
             return res.status(500).json({
 
                 success:false,
-                message:"action is not fulfiled"
+                message:"action is not fulfilled"
             })
 
         }
@@ -367,7 +377,7 @@ exports.verifySignature = async (req,res) =>{
     {
         return res.status(500).json({
             success:false,
-            message:"payment is not authoriszed"
+            message:"payment is not authorised"
         })
     }
 }
