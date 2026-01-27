@@ -301,19 +301,22 @@ export const verifyPayPalPayment = async (req, res) => {
                 invoiceParams.gst = currentPurchase.gstin;
             }
 
-// ✅ Call external Invoice API
-            await axios.get("https://actipace.com/invoice/api.php", {
-                params: invoiceParams,
-            });
+            axios
+                .get("https://actipace.com/invoice/api.php", {
+                    params: invoiceParams,
+                })
+                .catch(err => {
+                    console.error("Invoice API failed:", err.message);
+                });
 
 
 
 
-            await mailSender(
-                currentPurchase.email,
-                "your device licence keys",
-                populatedTemplate
-            );
+
+            mailSender(currentPurchase.email, "your device licence keys", populatedTemplate)
+                .catch(err => {
+                    console.error("Email failed:", err.message);
+                });
 
             // ✅ SAME IST expiry logic
             const IST_OFFSET = 5.5 * 60 * 60 * 1000;
