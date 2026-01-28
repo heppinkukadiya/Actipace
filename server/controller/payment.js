@@ -252,7 +252,6 @@ exports.verifySignature = async (req,res) =>{
                         const ky = parts.data.split("@")
             //const count = parseInt(ky[0], 10);
                         const codes = ky.slice(1);
-                        console.log("codes",codes);
 
                         const emailTemplatePath = path.join(__dirname, '../templet/mailtemplet.html');
                         const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf8');
@@ -283,6 +282,7 @@ exports.verifySignature = async (req,res) =>{
                             .replace('{{validity}}', orderDetails.validity)
                             .replace('{{licenseKeys}}', licenseKeysHtml);
            // console.log("ky",ky);
+
 
 
             mailSender(currentPurchase.email, "your device licence keys", populatedTemplate)
@@ -328,6 +328,29 @@ exports.verifySignature = async (req,res) =>{
                 .catch(err => {
                     console.error("Invoice API failed:", err.message);
                 });
+
+            const getSmsProductName = (softwareId) => {
+                if (Number(softwareId) === 1) return "TotalSecurity";
+                if (Number(softwareId) === 2) return "InternetSecurity";
+                return "BasicDefence";
+            };
+
+            const smsProduct = getSmsProductName(currentPurchase.software.software_id);
+            const mobile = currentPurchase.phoneNumber;
+
+            for (const key of codes) {
+                try {
+                    await axios.get("https://actipace.com/311025/sms.php", {
+                        params: {
+                            mobile,
+                            product: smsProduct,
+                            lkey: key,
+                        },
+                    });
+                } catch (err) {
+                    console.error("SMS API failed for key:", key, err.message);
+                }
+            }
 
 
 
